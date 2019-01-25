@@ -25,8 +25,9 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     $data = fetch_data($filename, $numDays);
     if (count($data) <= 0) return $graph;
 
-    $colors = ["black" => imagecolorallocate($graph, 20, 20, 20),
-               "gray"  => imagecolorallocate($graph, 165, 165, 165)];
+    $colors = ["black"    => imagecolorallocate($graph, 30, 30, 30),
+               "gray"     => imagecolorallocate($graph, 165, 165, 165),
+               "dimgray"  => imagecolorallocate($graph, 120, 120, 120)];
     
     $marginLeft = 13;
     $marginRight = 65;
@@ -39,7 +40,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     // Draw the graph.
     {
         // Print out the title.
-        imagestring($graph, 2, ($width/2 - $string_pixel_width($filename)/2), 4, $filename, $colors["black"]);
+        imagestring($graph, 2, ($width/2 - $string_pixel_width($filename)/2), 4, $filename, $colors["dimgray"]);
 
         // Draw horizontal markers at even intervals along the y axis.
         $draw_y_axis_markers = function($yFraction) use(&$draw_y_axis_markers, $marginLeft, $marginRight, $marginBottom,
@@ -51,7 +52,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
 
             $y = (($height - $marginBottom) - (($height - $marginTop - $marginBottom) * $yFraction));
             $value = round($minVal + (($maxVal - $minVal) * $yFraction), 4);
-            imagestring($graph, 2, ($width - $marginRight) + 7, ($y - imagefontheight(2)/2), $value, $colors["black"]);
+            imagestring($graph, 2, ($width - $marginRight) + 7, ($y - imagefontheight(2)/2), $value, $colors["dimgray"]);
             imagedashedline($graph,$marginLeft, $y, ($width - $marginRight), $y, $colors["gray"]);
 
             return ($yFraction >= 1)? 1 : $draw_y_axis_markers($yFraction + $interval);
@@ -84,7 +85,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             imagestring($graph, 2,
                         ($marginLeft + $x - $string_pixel_width($dateString) - 2),
                         ($height - $marginBottom) + 4,
-                        $dateString, $colors["black"]);
+                        $dateString, $colors["dimgray"]);
             
             return ($x <= 0)? 1 : $draw_x_axis_markers($x - $interval);
         }; $draw_x_axis_markers($width - $marginRight - $marginLeft);
