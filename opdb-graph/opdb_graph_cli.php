@@ -3,7 +3,7 @@ namespace opdb_graph;
 
 /*
  * Tarpeeksi Hyvae Soft 2019 /
- * opdb-graph
+ * opdb-graph (command-line version)
  *
  * Creates graphs of data from an opdb database file.
  * 
