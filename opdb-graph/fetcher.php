@@ -33,7 +33,11 @@ function fetch_data(string $filename, int $numDays)
         if ($idx > 0 && $data[$idx]["timestamp"] > $data[$idx-1]["timestamp"]) throw new \Exception("Invalid database: non-monotonic timestamps.");
 
         // Stop once we've finished collecting data over the requested number of days.
-        if ($data[$idx]["timestamp"] < strtotime("-" . $numDays . " days", $data[0]["timestamp"])) break;
+        if ($data[$idx]["timestamp"] < strtotime("-" . $numDays . " days", $data[0]["timestamp"]))
+        {
+            array_pop($data);
+            break;
+        }
 
         // Stop if we've reached the end (i.e. the beginning) of the file. Assumes each entry
         // to be 16 bytes, so if we can't seek back by the 16 we just read and another 16 to
