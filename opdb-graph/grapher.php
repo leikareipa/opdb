@@ -90,7 +90,16 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             return ($x <= 0)? 1 : $draw_x_axis_markers($x - $interval);
         }; $draw_x_axis_markers($width - $marginRight - $marginLeft);
 
-        // Draw the data into the graph as a continuous line that runs through each data point.
+        // If there's only one data point, draw it as a point.
+        if (count($data) == 1)
+        {
+            imagefilledellipse($graph,
+                               ($width - $marginRight),
+                               ($marginTop + (($height - $marginTop - $marginBottom) / 2)),
+                               5, 5, $colors["black"]);
+        }
+        // Otherwise, draw the data as a continuous line that runs through each data point.
+        else
         {
             $xStep = (($width - ($marginLeft + $marginRight)) / (count($data) - 1));
             $yStep = (($height - ($marginTop + $marginBottom)) / ($maxVal - $minVal));
@@ -101,9 +110,9 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
                 $y2 = (($data[$i]["value"] - $minVal) * $yStep);
 
                 imageline($graph,
-                        $marginLeft + (($i-1) * $xStep), $marginTop + $y1,
-                        $marginLeft + ($i * $xStep), $marginTop + $y2,
-                        $colors["black"]);
+                          $marginLeft + (($i-1) * $xStep), $marginTop + $y1,
+                          $marginLeft + ($i * $xStep), $marginTop + $y2,
+                          $colors["black"]);
             }
         }
     }
