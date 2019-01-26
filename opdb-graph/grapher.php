@@ -34,6 +34,14 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     $marginTop = 25;
     $marginBottom = 23;
 
+    $graphWidth = ($width - $marginLeft - $marginRight);
+    $graphHeight = ($height - $marginTop - $marginBottom);
+    if ($graphWidth <= 0 || $graphHeight <= 0) return $graph;
+
+    $startTime = $data[count($data)-1]["timestamp"];
+    $endTime = $data[0]["timestamp"];
+    if ($endTime < $startTime) throw new \Exception("Invalid timestamps detected.");
+
     $maxVal = max(array_column($data, "value"));
     $minVal = min(array_column($data, "value"));
 
@@ -44,16 +52,17 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
 
         // Draw horizontal markers at even intervals along the y axis.
         $draw_y_axis_markers = function($yFraction) use(&$draw_y_axis_markers, $marginLeft, $marginRight, $marginBottom,
-                                                        $marginTop, $colors, $graph, $width, $height, $minVal, $maxVal)
+                                                        $marginTop, $colors, $graph, $width, $height, $minVal, $maxVal,
+                                                        $graphHeight)
         {
             $interval = 0.125;
             if ($height <= 190) $interval = 0.25;
             if ($height <= 110) $interval = 0.5;
 
-            $y = (($height - $marginBottom) - (($height - $marginTop - $marginBottom) * $yFraction));
+            $y = (($height - $marginBottom) - ($graphHeight * $yFraction));
             $value = round($minVal + (($maxVal - $minVal) * $yFraction), 4);
             imagestring($graph, 2, ($width - $marginRight) + 7, ($y - imagefontheight(2)/2), $value, $colors["dimgray"]);
-            imagedashedline($graph,$marginLeft, $y, ($width - $marginRight), $y, $colors["gray"]);
+            imagedashedline($graph, $marginLeft, $y, ($width - $marginRight), $y, $colors["gray"]);
 
             return ($yFraction >= 1)? 1 : $draw_y_axis_markers($yFraction + $interval);
         }; $draw_y_axis_markers(0);
@@ -61,7 +70,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
         // Draw vertical markers at even intervals along the x axis.
         $draw_x_axis_markers = function($x) use(&$draw_x_axis_markers, $data, $marginLeft, $marginRight,
                                                 $marginBottom, $marginTop, $colors, $graph, $width, $height,
-                                                $string_pixel_width)
+                                                $string_pixel_width, $graphWidth, $startTime, $endTime)
         {
             // Guarantee that the graph's left edge gets a vertical marker.
             if ($x < 0) $x = 0;
@@ -74,9 +83,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
                             $colors["gray"]);
 
             // Find the timestamp that corresponds to the given x coordinate on the graph.
-            $startTime = $data[count($data)-1]["timestamp"];
-            $endTime = $data[0]["timestamp"];
-            $timePerX = ($endTime - $startTime) / ($width - $marginRight - $marginLeft);
+            $timePerX = ($endTime - $startTime) / $graphWidth;
             $currentTime = ($startTime + ($x * $timePerX));
 
             $dateString = date("d-M-y/H:i:s", $currentTime);
@@ -88,14 +95,14 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
                         $dateString, $colors["dimgray"]);
             
             return ($x <= 0)? 1 : $draw_x_axis_markers($x - $interval);
-        }; $draw_x_axis_markers($width - $marginRight - $marginLeft);
+        }; $draw_x_axis_markers($graphWidth);
 
-        // If there's only one data point, draw it as a point.
-        if (count($data) == 1)
+        // If there's only one data point, draw it on the graph as a point rather than as a line.
+        if ($endTime == $startTime)
         {
             imagefilledellipse($graph,
                                ($width - $marginRight),
-                               ($marginTop + (($height - $marginTop - $marginBottom) / 2)),
+                               ($marginTop + ($graphHeight/2)),
                                5, 5, $colors["black"]);
         }
         // Otherwise, draw the data as a continuous line that runs through each data point.
@@ -105,7 +112,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             // line through the middle of the graph.
             if (($maxVal - $minVal) == 0)
             {
-                $verticalMiddle = ($marginTop + (($height-$marginTop-$marginBottom)/2));
+                $verticalMiddle = ($marginTop + ($graphHeight/2));
 
                 imageline($graph,
                           $marginLeft, $verticalMiddle,
@@ -114,17 +121,20 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             }
             else
             {
-                $xStep = (($width - ($marginLeft + $marginRight)) / (count($data) - 1));
-                $yStep = (($height - ($marginTop + $marginBottom)) / ($maxVal - $minVal));
-                
-                for ($i = 1; $i < count($data); $i++)
+                $xStep = ($graphWidth / ($endTime - $startTime));
+                $yStep = ($graphHeight / ($maxVal - $minVal));
+
+                for ($i = (count($data) - 1); $i > 0; $i--)
                 {
-                    $y1 = (($data[$i-1]["value"] - $minVal) * $yStep);
-                    $y2 = (($data[$i]["value"] - $minVal) * $yStep);
+                    $y1 = ($graphHeight - (($data[$i-1]["value"] - $minVal) * $yStep));
+                    $y2 = ($graphHeight - (($data[$i]["value"] - $minVal) * $yStep));
+
+                    $x1 = (($data[$i-1]["timestamp"] - $startTime) * $xStep);
+                    $x2 = (($data[$i]["timestamp"] - $startTime) * $xStep);
 
                     imageline($graph,
-                              $marginLeft + (($i-1) * $xStep), $marginTop + $y1,
-                              $marginLeft + ($i * $xStep), $marginTop + $y2,
+                              ($marginLeft + $x1), ($marginTop + $y1),
+                              ($marginLeft + $x2), ($marginTop + $y2),
                               $colors["black"]);
                 }
             }
