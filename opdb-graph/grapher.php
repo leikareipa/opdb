@@ -110,7 +110,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
         {
             // If all the values to be graphed are identical, just draw a straight horizontal
             // line through the middle of the graph.
-            if (($maxVal - $minVal) == 0)
+            if ($maxVal == $minVal)
             {
                 $verticalMiddle = ($marginTop + ($graphHeight/2));
 
