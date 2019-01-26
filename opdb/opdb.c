@@ -133,7 +133,7 @@ int main(int argc, char **argv)
                     char *endPtr = NULL;
                     value = strtod(argv[3], &endPtr);
 
-                    /* Vertify that we got a good value out of the conversion.*/
+                    /* Verify that we got a good value out of the conversion.*/
                     bail_if((*endPtr != '\0'), "Failed to convert the given value into a double.");
                     bail_if((value != value), "The given value is not a number.");
                     bail_if((value < -DBL_MAX || value > DBL_MAX), "The given value is infinite.");
