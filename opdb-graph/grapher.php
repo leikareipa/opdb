@@ -101,18 +101,32 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
         // Otherwise, draw the data as a continuous line that runs through each data point.
         else
         {
-            $xStep = (($width - ($marginLeft + $marginRight)) / (count($data) - 1));
-            $yStep = (($height - ($marginTop + $marginBottom)) / ($maxVal - $minVal));
-            
-            for ($i = 1; $i < count($data); $i++)
+            // If all the values to be graphed are identical, just draw a straight horizontal
+            // line through the middle of the graph.
+            if (($maxVal - $minVal) == 0)
             {
-                $y1 = (($data[$i-1]["value"] - $minVal) * $yStep);
-                $y2 = (($data[$i]["value"] - $minVal) * $yStep);
+                $verticalMiddle = ($marginTop + (($height-$marginTop-$marginBottom)/2));
 
                 imageline($graph,
-                          $marginLeft + (($i-1) * $xStep), $marginTop + $y1,
-                          $marginLeft + ($i * $xStep), $marginTop + $y2,
+                          $marginLeft, $verticalMiddle,
+                          ($width - $marginRight), $verticalMiddle,
                           $colors["black"]);
+            }
+            else
+            {
+                $xStep = (($width - ($marginLeft + $marginRight)) / (count($data) - 1));
+                $yStep = (($height - ($marginTop + $marginBottom)) / ($maxVal - $minVal));
+                
+                for ($i = 1; $i < count($data); $i++)
+                {
+                    $y1 = (($data[$i-1]["value"] - $minVal) * $yStep);
+                    $y2 = (($data[$i]["value"] - $minVal) * $yStep);
+
+                    imageline($graph,
+                              $marginLeft + (($i-1) * $xStep), $marginTop + $y1,
+                              $marginLeft + ($i * $xStep), $marginTop + $y2,
+                              $colors["black"]);
+                }
             }
         }
     }
