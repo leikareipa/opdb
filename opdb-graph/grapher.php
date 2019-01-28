@@ -87,12 +87,13 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             $currentTime = ($startTime + ($x * $timePerX));
 
             $dateString = date("d-M-y/H:i:s", $currentTime);
-            if (($x - $string_pixel_width($dateString)) < 0) return; 
-
-            imagestring($graph, 2,
-                        ($marginLeft + $x - $string_pixel_width($dateString) - 2),
-                        ($height - $marginBottom) + 4,
-                        $dateString, $colors["dimgray"]);
+            if (($x - $string_pixel_width($dateString)) >= 0)
+            {
+                imagestring($graph, 2,
+                            ($marginLeft + $x - $string_pixel_width($dateString) - 2),
+                            ($height - $marginBottom) + 4,
+                            $dateString, $colors["dimgray"]);
+            }
             
             return ($x <= 0)? 1 : $draw_x_axis_markers($x - $interval);
         }; $draw_x_axis_markers($graphWidth);
