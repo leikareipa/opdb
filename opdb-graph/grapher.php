@@ -9,7 +9,7 @@ namespace opdb_graph;
  *
  */
 
-function create_graph(int $width, int $height, string $filename, int $numDays)
+function create_graph(int $width, int $height, string $title, string $filename, int $numDays)
 {
     if (!file_exists($filename)) throw new \Exception("Can't find the given database file.");
     if ($width < 1 || $height < 1) throw new \Exception("Invalid graph dimensions.");
@@ -48,7 +48,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     // Draw the graph.
     {
         // Print out the title.
-        imagestring($graph, 2, ($width/2 - $string_pixel_width($filename)/2), 5, $filename, $colors["black"]);
+        imagestring($graph, 2, ($width/2 - $string_pixel_width($title)/2), 5, $title, $colors["black"]);
 
         // Draw horizontal markers at even intervals along the y axis.
         $draw_y_axis_markers = function($yFraction) use(&$draw_y_axis_markers, $marginLeft, $marginRight, $marginBottom,
