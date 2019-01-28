@@ -25,14 +25,14 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     $data = fetch_data($filename, $numDays);
     if (count($data) <= 0) return $graph;
 
-    $colors = ["black"    => imagecolorallocate($graph, 30, 30, 30),
+    $colors = ["black"    => imagecolorallocate($graph, 20, 20, 20),
                "gray"     => imagecolorallocate($graph, 165, 165, 165),
                "dimgray"  => imagecolorallocate($graph, 120, 120, 120)];
     
     $marginLeft = 13;
     $marginRight = 65;
-    $marginTop = 25;
-    $marginBottom = 23;
+    $marginTop = 27;
+    $marginBottom = 35;
 
     $graphWidth = ($width - $marginLeft - $marginRight);
     $graphHeight = ($height - $marginTop - $marginBottom);
@@ -48,7 +48,7 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
     // Draw the graph.
     {
         // Print out the title.
-        imagestring($graph, 2, ($width/2 - $string_pixel_width($filename)/2), 4, $filename, $colors["dimgray"]);
+        imagestring($graph, 2, ($width/2 - $string_pixel_width($filename)/2), 5, $filename, $colors["black"]);
 
         // Draw horizontal markers at even intervals along the y axis.
         $draw_y_axis_markers = function($yFraction) use(&$draw_y_axis_markers, $marginLeft, $marginRight, $marginBottom,
@@ -75,24 +75,32 @@ function create_graph(int $width, int $height, string $filename, int $numDays)
             // Guarantee that the graph's left edge gets a vertical marker.
             if ($x < 0) $x = 0;
 
-            $interval = 150;
+            $interval = 80;
 
             imagedashedline($graph,
                             ($marginLeft + $x), $marginTop,
-                            ($marginLeft + $x), ($height - $marginBottom) + (($x > 0)? 7 : 0),
+                            ($marginLeft + $x), ($height - $marginBottom) + (($x > 0)? 3 : 0),
                             $colors["gray"]);
 
             // Find the timestamp that corresponds to the given x coordinate on the graph.
             $timePerX = ($endTime - $startTime) / $graphWidth;
             $currentTime = ($startTime + ($x * $timePerX));
 
-            $dateString = date("d-M-y/H:i:s", $currentTime);
-            if (($x - $string_pixel_width($dateString)) >= 0)
+            // Print out this marker's timestamp.
+            $dateString = date("d-M-y", $currentTime);
+            $timeString = date("H:i:s", $currentTime);
+            if (($x - $string_pixel_width($dateString)) >= 0 &&
+                ($x - $string_pixel_width($timeString)) >= 0)
             {
                 imagestring($graph, 2,
-                            ($marginLeft + $x - $string_pixel_width($dateString) - 2),
-                            ($height - $marginBottom) + 4,
+                            ($marginLeft + $x - $string_pixel_width($dateString) + imagefontwidth(2)/2),
+                            ($height - $marginBottom) + 5,
                             $dateString, $colors["dimgray"]);
+
+                imagestring($graph, 2,
+                            ($marginLeft + $x - $string_pixel_width($timeString) + imagefontwidth(2)/2),
+                            ($height - $marginBottom) + 5 + imagefontheight(2),
+                            $timeString, $colors["dimgray"]);
             }
             
             return ($x <= 0)? 1 : $draw_x_axis_markers($x - $interval);
