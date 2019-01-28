@@ -3,6 +3,8 @@ A no-frills database and grapher for basic sequential logging; intended for keep
 
 The database, loosely termed, is a headerless binary file consisting of 16-byte time/value pairs: an int64, which stores an epoch, and a double, which stores a value logged on that occasion.
 
+![A screenshot of opdb](http://www.tarpeeksihyvaesoft.com/soft/img/opdb_sample.png)
+
 ## Usage
 Currently, opdb is made up of two components: `opdb` and `opdb_graph`. The former is used to interact with the database file, and the latter to produce graphs of logged data.
 
