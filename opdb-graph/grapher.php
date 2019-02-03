@@ -29,8 +29,8 @@ function create_graph(int $width, int $height, string $title, string $filename, 
                "gray"     => imagecolorallocate($graph, 165, 165, 165),
                "dimgray"  => imagecolorallocate($graph, 120, 120, 120)];
     
-    $marginLeft = 13;
-    $marginRight = 65;
+    $marginLeft = 14;
+    $marginRight = 50;
     $marginTop = 27;
     $marginBottom = 35;
 
