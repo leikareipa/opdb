@@ -1,1 +1,1 @@
-gcc -ansi -pedantic -Wall opdb.c -o bin/opdb
+gcc -ansi -pedantic -Wall opdb.c -o opdb

@@ -27,7 +27,7 @@ static void bail_if(const int bailCondition, const char *const errMessage)
 }
 
 /* Append the given datum to the end of the given database file.*/
-static void save_datum(const double value, const char *const filename)
+static void save_datum(const float value, const char *const filename)
 {
     const int64_t secsSinceEpoch = (int64_t)time(NULL);
     FILE *const file = fopen(filename, "ab");
@@ -36,11 +36,11 @@ static void save_datum(const double value, const char *const filename)
 
     /* Be a bit paranoid and double-check that we're dealing with correctly-
      * sized variables. This is basically a replacement for static_assert.*/
-    bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 8), "Unexpected data size.");
+    bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
 
     /* Write out the data.*/
-    bail_if((fwrite((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1 ||
-             fwrite((char*)&value, sizeof(value), 1, file) != 1),
+    bail_if(((fwrite((char*)&value, sizeof(value), 1, file) != 1) ||
+             (fwrite((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1)),
             "Failed to append the data to the database file.");
 
     fclose(file);
@@ -58,15 +58,15 @@ static void printout(const char *const filename)
         while (1)
         {
             int64_t secsSinceEpoch;
-            double value;
+            float value;
 
             /* Be a bit paranoid and double-check that we're dealing with correctly-
              * sized variables. This is basically a replacement for static_assert.*/
-            bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 8), "Unexpected data size.");
+            bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
 
             /* Load in the data.*/
-            if (fread((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1 ||
-                fread((char*)&value, sizeof(value), 1, file) != 1)
+            if ((fread((char*)&value, sizeof(value), 1, file) != 1) ||
+                (fread((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1))
             {
                 /* Assume end of file.*/
                 break;
@@ -77,7 +77,7 @@ static void printout(const char *const filename)
                 char *const dateString = asctime(localtime(&secsSinceEpoch));
                 dateString[strlen(dateString) - 1] = '\0'; /* Remove newline.*/
 
-                printf("%d.[%s] %.16g\n", ++i, dateString, value);
+                printf("%d. [%s] %f\n", ++i, dateString, value);
             }
         }
     }
@@ -123,18 +123,18 @@ int main(int argc, char **argv)
             /* Append a new datum into the database file.*/
             case ACTION_LOG:
             {
-                double value = 0;
+                float value = 0;
 
                 bail_if((argc != 4), "Unsupported number of arguments for 'log'.");
 
                 /* Assume that the third argument gives as a string the floating-point
-                 * value to log. Convert it from a string into a double.*/
+                 * value to log. Convert it from a string into a float.*/
                 {
                     char *endPtr = NULL;
                     value = strtod(argv[3], &endPtr);
 
                     /* Verify that we got a good value out of the conversion.*/
-                    bail_if((*endPtr != '\0'), "Failed to convert the given value into a double.");
+                    bail_if((*endPtr != '\0'), "Failed to convert the given value into a float.");
                     bail_if((value != value), "The given value is not a number.");
                     bail_if((value < -DBL_MAX || value > DBL_MAX), "The given value is infinite.");
                 }

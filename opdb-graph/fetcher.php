@@ -21,15 +21,15 @@ function fetch_data(string $filename, int $numDays)
     if (!$file) throw new \Exception("Can't open the given database file.");
 
     // Read in the database file, starting from the end and working toward the beginning,
-    // one 16-byte entry at a time, until we've covered the requested number of days.
+    // one 12-byte entry at a time, until we've covered the requested number of days.
     $idx = 0;
     $data = [];
-    fseek($file, -16, SEEK_END);
+    fseek($file, -12, SEEK_END);
     while (1)
     {
-        $data[$idx]["timestamp"] = unpack("q", fread($file, 8))[1];
-        $data[$idx]["value"] = unpack("d", fread($file, 8))[1];
-        if ((ftell($file) % 16) !== 0) throw new \Exception("Misaligned data read detected.");
+        $data[$idx]["value"] = unpack("f", fread($file, 4))[1];
+        $data[$idx]["timestamp"] = (unpack("q", fread($file, 8))[1]);
+        if ((ftell($file) % 12) !== 0) throw new \Exception("Misaligned data read detected.");
         if ($idx > 0 && $data[$idx]["timestamp"] > $data[$idx-1]["timestamp"]) throw new \Exception("Invalid database: non-monotonic timestamps.");
 
         // Stop once we've finished collecting data over the requested number of days.
@@ -42,9 +42,9 @@ function fetch_data(string $filename, int $numDays)
         // Stop if we've reached the end (i.e. the beginning) of the file. Assumes each entry
         // to be 16 bytes, so if we can't seek back by the 16 we just read and another 16 to
         // get to the start of the next entry, we're done.
-        if (ftell($file) < 32) break;
+        if (ftell($file) < 24) break;
 
-        fseek($file, -32, SEEK_CUR);
+        fseek($file, -24, SEEK_CUR);
         $idx++;
     }
 
