@@ -1,6 +1,5 @@
 .*
 !/.gitignore
 *.opdb*
-*.png
 bin/
 tools/

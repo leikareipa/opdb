@@ -1,9 +1,9 @@
 # opdb
-A no-frills database and grapher for basic sequential logging; intended for keeping track of single-parameter observations that vary wrt. monotonically increasing time, like temperature.
+A no-frills database and grapher for simple sequential logging.
 
-The database, loosely termed, is a headerless binary file consisting of 16-byte time/value pairs: an int64, which stores an epoch, and a double, which stores a value logged on that occasion.
+![A screenshot of opdb](./images/screenshots/air-pressure.png)
 
-![A screenshot of opdb](http://www.tarpeeksihyvaesoft.com/soft/img/opdb_sample.png)
+The database, loosely termed, is a headerless binary file consisting of 12-byte value/time pairs: a float that stores a value logged on an occasion, and an int64 that records the time (milliseconds since epoch) of the occasion.
 
 ## Usage
 Currently, opdb is made up of two components: `opdb` and `opdb_graph`. The former is used to interact with the database file, and the latter to produce graphs of logged data.
@@ -15,9 +15,9 @@ The following command-line command will log the value `50.2` into the file `thin
 To get a raw printout of the contents of `thing.opdb`:
 
     $ opdb print thing.opdb
-    1.[Sat Jan 26 08:07:14 2019] 50.2
+    1. [Sat Jan 26 08:07:14 2019] 50.2
     
-A PNG graph can be produced as follows:
+A PNG graph can be produced in this manner:
 
     $ php opdb_graph_cli.php -i thing.opdb -o thing.png -w 250 -h 150 -d 1
     
