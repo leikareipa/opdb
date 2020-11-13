@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <time.h>
+#include <sys/time.h>
 
 /* If the condition evaluates to true, produce the given user-facing error message,
  * then terminate the program.*/
@@ -29,18 +30,24 @@ static void bail_if(const int bailCondition, const char *const errMessage)
 /* Append the given datum to the end of the given database file.*/
 static void save_datum(const float value, const char *const filename)
 {
-    const int64_t secsSinceEpoch = (int64_t)time(NULL);
+    int64_t msSinceEpoch;
     FILE *const file = fopen(filename, "ab");
 
     bail_if((file == NULL), "Failed to open the database file.");
 
     /* Be a bit paranoid and double-check that we're dealing with correctly-
      * sized variables. This is basically a replacement for static_assert.*/
-    bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
+    bail_if((sizeof(msSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
+
+    {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        msSinceEpoch = ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+    }
 
     /* Write out the data.*/
     bail_if(((fwrite((char*)&value, sizeof(value), 1, file) != 1) ||
-             (fwrite((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1)),
+             (fwrite((char*)&msSinceEpoch, sizeof(msSinceEpoch), 1, file) != 1)),
             "Failed to append the data to the database file.");
 
     fclose(file);
@@ -57,24 +64,27 @@ static void printout(const char *const filename)
         unsigned i = 0;
         while (1)
         {
-            int64_t secsSinceEpoch;
+            int64_t msSinceEpoch;
             float value;
 
             /* Be a bit paranoid and double-check that we're dealing with correctly-
              * sized variables. This is basically a replacement for static_assert.*/
-            bail_if((sizeof(secsSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
+            bail_if((sizeof(msSinceEpoch) != 8 || sizeof(value) != 4), "Unexpected data size.");
 
             /* Load in the data.*/
             if ((fread((char*)&value, sizeof(value), 1, file) != 1) ||
-                (fread((char*)&secsSinceEpoch, sizeof(secsSinceEpoch), 1, file) != 1))
+                (fread((char*)&msSinceEpoch, sizeof(msSinceEpoch), 1, file) != 1))
             {
                 /* Assume end of file.*/
                 break;
             }
 
+            /* Convert to seconds.*/
+            msSinceEpoch /= 1000;
+
             /* Print out the data.*/
             {
-                char *const dateString = asctime(localtime(&secsSinceEpoch));
+                char *const dateString = asctime(localtime(&msSinceEpoch));
                 dateString[strlen(dateString) - 1] = '\0'; /* Remove newline.*/
 
                 printf("%d. [%s] %f\n", ++i, dateString, value);

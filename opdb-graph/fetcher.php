@@ -28,7 +28,8 @@ function fetch_data(string $filename, int $numDays)
     while (1)
     {
         $data[$idx]["value"] = unpack("f", fread($file, 4))[1];
-        $data[$idx]["timestamp"] = (unpack("q", fread($file, 8))[1]);
+        $data[$idx]["timestamp"] = ((int)(unpack("q", fread($file, 8))[1] / 1000));
+
         if ((ftell($file) % 12) !== 0) throw new \Exception("Misaligned data read detected.");
         if ($idx > 0 && $data[$idx]["timestamp"] > $data[$idx-1]["timestamp"]) throw new \Exception("Invalid database: non-monotonic timestamps.");
 
