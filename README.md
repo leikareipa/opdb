@@ -19,9 +19,9 @@ To get a raw printout of the contents of `thing.opdb`:
     
 A PNG graph can be produced in this manner:
 
-    $ php opdb_graph_cli.php -i thing.opdb -o thing.png -w 250 -h 150 -d 1
+    $ php opdb_graph.php -i thing.opdb -o thing.png -w 250 -h 150 -d 1
     
-(You can find a list of the command-line parameters accepted by `opdb_graph_cli.php` in that file.)
+(You can find a list of the command-line parameters accepted by `opdb_graph.php` in that file.)
 
 ## Requirements
 PHP 7 with PHP GD and CLI.
